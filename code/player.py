@@ -9,6 +9,7 @@ class Player(pygame.sprite.Sprite):
 
         self.rect = self.image.get_frect(topleft=pos)
         self.old_rect = self.rect.copy()
+        self.hitbox_rect = self.rect.inflate(-76, -36)
 
         self.direction = pygame.math.Vector2()
         self.speed = 150
@@ -39,15 +40,15 @@ class Player(pygame.sprite.Sprite):
             self.jump = True
 
     def move(self, dt):
-        self.rect.x += self.direction.x * self.speed * dt
+        self.hitbox_rect.x += self.direction.x * self.speed * dt
         self.collsion("horizontal")
 
         if not self.on_sruface["floor"] and any((self.on_sruface["left"], self.on_sruface["right"])) and not self.timers["delay"].active:
             self.direction.y = 0
-            self.rect.y += self.gravity / 10 * dt
+            self.hitbox_rect.y += self.gravity / 10 * dt
         else:
             self.direction.y += self.gravity / 2 * dt
-            self.rect.y += self.direction.y * dt
+            self.hitbox_rect.y += self.direction.y * dt
             self.direction.y += self.gravity / 2 * dt 
 
         self.collsion("vertical")
@@ -56,11 +57,14 @@ class Player(pygame.sprite.Sprite):
             if self.on_sruface["floor"]:
                 self.direction.y = -self.jump_height
                 self.timers["delay"].activate()
+                self.hitbox_rect.y -= 1
             elif any((self.on_sruface["left"], self.on_sruface["right"])) and not self.timers["delay"].active:
                 self.timers["wall_jump"].activate()
                 self.direction.y = -self.jump_height
                 self.direction.x = 1 if self.on_sruface["left"] else -1
             self.jump = False
+
+        self.rect.center = self.hitbox_rect.center
 
     def check_contacts(self):
         floor_rect = pygame.Rect(self.rect.bottomleft, (self.rect.width, 2))
@@ -76,17 +80,17 @@ class Player(pygame.sprite.Sprite):
         for sprite in self.collision_sprites:
             if sprite.rect.colliderect(self.rect):
                 if axis == "horizontal":
-                    if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.old_rect.right:
-                        self.rect.left = sprite.rect.right
+                    if self.hitbox_rect.left <= sprite.rect.right and self.old_rect.left >= sprite.old_rect.right:
+                        self.hitbox_rect.left = sprite.rect.right
 
-                    if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.old_rect.left:
-                        self.rect.right = sprite.rect.left
+                    if self.hitbox_rect.right >= sprite.rect.left and self.old_rect.right <= sprite.old_rect.left:
+                        self.hitbox_rect.right = sprite.rect.left
                 else:
-                    if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.old_rect.bottom:
-                        self.rect.top = sprite.rect.bottom
+                    if self.hitbox_rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.old_rect.bottom:
+                        self.hitbox_rect.top = sprite.rect.bottom
 
-                    if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.old_rect.top:
-                        self.rect.bottom = sprite.rect.top
+                    if self.hitbox_rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.old_rect.top:
+                        self.hitbox_rect.bottom = sprite.rect.top
                     self.direction.y = 0
 
     def udpate_timers(self):
