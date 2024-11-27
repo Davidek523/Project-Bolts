@@ -52,6 +52,6 @@
 </data>
  </layer>
  <objectgroup id="2" name="Objects">
-  <object id="1" gid="962" x="10.625" y="446.875" width="40" height="40"/>
+  <object id="1" name="Player" type="Entities" gid="962" x="10.625" y="446.875" width="40" height="40"/>
  </objectgroup>
 </map>
